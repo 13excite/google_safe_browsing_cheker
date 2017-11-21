@@ -1,5 +1,6 @@
 import requests
 import json
+import sys
 
 URL = 'https://safebrowsing.googleapis.com/v4/threatMatches:find?key='
 KEY = 'trololo'
@@ -10,13 +11,16 @@ def get_json(url, data):
     headers = {
         'Content-Type': 'application/json'
     }
-    r = requests.post(url, json_data, headers=headers)
+    try:
+        r = requests.post(url, json_data, headers=headers)
+    except requests.exceptions.RequestException as e:
+        sys.exit(1)
     return json.loads(r.text.encode('UTF-8'))
 
 valid_url =  URL+KEY
 data = {
         "client": {
-                    "clientId":      "my_project",
+                    "clientId":      "myproject",
                     "clientVersion": "1.5.2"
                 },
         "threatInfo": {
@@ -30,15 +34,16 @@ data = {
                 }
 }
 
-output = get_json(valid_url, data)
+if __name__ == "__main__":
 
-#print unicode(output)
-if len(output) > 0:
-    list_data =  output.get('matches'.encode('UTF-8')) #.get('threatType'.encode('UTF-8'))
-    with open(FILENAME, 'a') as f:
-        for elem in list_data:
-            f.write(elem.get('threat'.encode('UTF-8')).get('url'.encode('UTF-8')) + '\n')
-    f.close()
-else:
-    open(FILENAME, 'w').close()
-    #print "OK"
+    output = get_json(valid_url, data)
+
+    if len(output) > 0:
+        list_data =  output.get('matches'.encode('UTF-8')) #.get('threatType'.encode('UTF-8'))
+        with open(FILENAME, 'a') as f:
+            for elem in list_data:
+                f.write(elem.get('threat'.encode('UTF-8')).get('url'.encode('UTF-8')) + '\n')
+        f.close()
+    else:
+        open(FILENAME, 'w').close()
+        #print "OK"
