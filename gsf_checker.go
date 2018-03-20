@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 )
 
-func getURL(filePath string) string {
+func getURL(filePath, shortRequestURL string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
@@ -23,13 +23,26 @@ func getURL(filePath string) string {
 		lines = append(lines, scanner.Text())
 	}
 	gsfKey := lines[0]
-	url := "http://ddd.ru/"
-	return url + gsfKey
+	return shortRequestURL + gsfKey
 }
 
-func sendRequest(requestUrl string) {
-	var jsonStr = []byte(`{"title":"test"}`)
-	req, err := http.NewRequest("POST", requestUrl, bytes.NewBuffer(jsonStr))
+func sendRequest(requestURL string) {
+	var jsonStr = []byte(`{
+        "client": {
+                    "clientId":      "myproject",
+                    "clientVersion": "1.5.2"
+                },
+        "threatInfo": {
+                    "threatTypes":      ["MALWARE", "SOCIAL_ENGINEERING", "POTENTIALLY_HARMFUL_APPLICATION", "UNWANTED_SOFTWARE"],
+                    "platformTypes":    ["ANY_PLATFORM"],
+                    "threatEntryTypes": ["URL"],
+                    "threatEntries": [
+                                {"url": "http://malware.testing.google.test/testing/malware/"},
+                                {"url": "http://ianfette.org"},
+                            ]
+                }
+}`)
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -46,8 +59,7 @@ func sendRequest(requestUrl string) {
 }
 
 func main() {
-	const URL string = "http://ya.ru"
-	//fmt.Printf(getURL("/tmp/test.txt"))
-	fmt.Println("bla bla")
-	sendRequest(URL)
+	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
+	fullURL := getURL("/tmp/google.key", URL)
+	sendRequest(fullURL)
 }
