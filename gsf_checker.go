@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -59,7 +60,16 @@ func sendRequest(requestURL string) {
 }
 
 func main() {
+	filePath := flag.String("key", "", "usage --key /foo/bar.key")
+	flag.Parse()
+
+	key := *filePath
+	// check required flag
+	if key == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
 	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
-	fullURL := getURL("/tmp/google.key", URL)
-	sendRequest(fullURL)
+	//fullURL := getURL("/tmp/google_sb.key", URL)
+	sendRequest(getURL(key, URL))
 }
