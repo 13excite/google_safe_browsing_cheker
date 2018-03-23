@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
 	//"encoding/json"
 
 	"bytes"
 	"io/ioutil"
+	"time"
 )
 
 func getURL(filePath, shortRequestURL string) string {
@@ -46,7 +48,7 @@ func sendRequest(requestURL string) {
 	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 4 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
@@ -60,6 +62,8 @@ func sendRequest(requestURL string) {
 }
 
 func main() {
+	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
+
 	filePath := flag.String("key", "", "usage --key /foo/bar.key")
 	flag.Parse()
 
@@ -69,7 +73,6 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
-	//fullURL := getURL("/tmp/google_sb.key", URL)
+
 	sendRequest(getURL(key, URL))
 }
