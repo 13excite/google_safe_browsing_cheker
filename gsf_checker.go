@@ -28,6 +28,14 @@ type Matches struct {
 	ThreatEntryType string  `json:"threatEntryType"`
 }
 
+func getJsonOfRequest(filePath string) []byte {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Printf("Error open file: %s", err)
+		os.Exit(1)
+	}
+	return data
+}
 func getURL(filePath, shortRequestURL string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -87,17 +95,15 @@ func parseJson(responseData []byte) {
 	for _, s := range val.Matches {
 		fmt.Println(s.Threat.Url)
 	}
-
-	fmt.Println(string(responseData))
 }
 
 func main() {
 	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
 
-	filePath := flag.String("key", "", "usage --key /foo/bar.key")
+	keyPath := flag.String("key", "", "usage --key /foo/bar.key")
 	flag.Parse()
 
-	key := *filePath
+	key := *keyPath
 	// check required flag
 	if key == "" {
 		flag.Usage()
