@@ -51,9 +51,23 @@ func getURL(filePath, shortRequestURL string) string {
 	return shortRequestURL + gsfKey
 }
 
-func sendRequest(requestURL string, jsonOfRequest []byte) []byte {
-	//var jsonStr = jsonOfRequest
-	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonOfRequest))
+func sendRequest(requestURL string) []byte {
+	var jsonStr = []byte(`{
+        "client": {
+                    "clientId":      "myproject",
+                    "clientVersion": "1.5.2"
+                },
+        "threatInfo": {
+                    "threatTypes":      ["MALWARE", "SOCIAL_ENGINEERING", "POTENTIALLY_HARMFUL_APPLICATION", "UNWANTED_SOFTWARE"],
+                    "platformTypes":    ["ANY_PLATFORM"],
+                    "threatEntryTypes": ["URL"],
+                    "threatEntries": [
+                                {"url": "http://malware.testing.google.test/testing/malware/"},
+                                {"url": "http://ianfette.org"},
+                            ]
+                }
+}`)
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: 4 * time.Second}
@@ -66,7 +80,7 @@ func sendRequest(requestURL string, jsonOfRequest []byte) []byte {
 	fmt.Println("response header:", resp.Header)
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println("response body:", string(body))
+	fmt.Println("response body:", string(body))
 	return body
 }
 
@@ -87,17 +101,15 @@ func main() {
 	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
 
 	keyPath := flag.String("key", "", "usage --key /foo/bar.key")
-	jsonOfRequestPath := flag.String("json", "", "usege --json /request_data.json")
 	flag.Parse()
 
 	key := *keyPath
-	requestData := *jsonOfRequestPath
 	// check required flag
-	if key == "" || requestData == "" {
+	if key == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	parseJson(sendRequest(getURL(key, URL), getJsonOfRequest(requestData)))
+	parseJson(sendRequest(getURL(key, URL)))
 	//sendRequest(getURL(key, URL))
 }
