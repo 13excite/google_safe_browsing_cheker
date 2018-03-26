@@ -2,17 +2,28 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
-
-	//"encoding/json"
-
-	"bytes"
-	"io/ioutil"
 	"time"
 )
+
+type Threat struct {
+	Url string `json:"url"`
+}
+
+type APIResponse struct {
+	Matches []Matches `json:"matches"`
+}
+type Matches struct {
+	ThreatType      string  `json:"threatType"`
+	PlatformType    string  `json:"platformType"`
+	Threat          *Threat `json:"threat"`
+	CacheDuration   string  `json:"cacheDuration"`
+	ThreatEntryType string  `json:"threatEntryType"`
+}
 
 func getURL(filePath, shortRequestURL string) string {
 	file, err := os.Open(filePath)
@@ -29,7 +40,7 @@ func getURL(filePath, shortRequestURL string) string {
 	return shortRequestURL + gsfKey
 }
 
-func sendRequest(requestURL string) {
+func sendRequest(requestURL string) []byte {
 	var jsonStr = []byte(`{
         "client": {
                     "clientId":      "myproject",
@@ -59,6 +70,11 @@ func sendRequest(requestURL string) {
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println("response body:", string(body))
+	return body
+}
+
+func parseJson(json []byte) {
+	fmt.Println(json)
 }
 
 func main() {
