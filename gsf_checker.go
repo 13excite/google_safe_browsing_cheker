@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -73,8 +76,19 @@ func sendRequest(requestURL string) []byte {
 	return body
 }
 
-func parseJson(json []byte) {
-	fmt.Println(json)
+func parseJson(responseData []byte) {
+	response := bytes.NewReader(responseData)
+	decoder := json.NewDecoder(response)
+	val := &APIResponse{}
+	err := decoder.Decode(val)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, s := range val.Matches {
+		fmt.Println(s.Threat.Url)
+	}
+
+	fmt.Println(string(responseData))
 }
 
 func main() {
@@ -90,5 +104,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	sendRequest(getURL(key, URL))
+	parseJson(sendRequest(getURL(key, URL)))
+	//sendRequest(getURL(key, URL))
 }
