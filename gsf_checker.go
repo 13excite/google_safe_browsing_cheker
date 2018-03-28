@@ -31,7 +31,7 @@ type Matches struct {
 func getJsonOfRequest(filePath string) []byte {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Printf("Error open file: %s", err)
+		fmt.Printf("Error open json file: %s", err)
 		os.Exit(1)
 	}
 	return data
@@ -78,8 +78,13 @@ func parseJson(responseData []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, s := range val.Matches {
-		fmt.Println(s.Threat.Url)
+	if val.Matches != nil {
+		for _, s := range val.Matches {
+			fmt.Println(s.Threat.Url)
+		}
+	} else {
+		fmt.Println("Url not found")
+		os.Exit(1)
 	}
 }
 
