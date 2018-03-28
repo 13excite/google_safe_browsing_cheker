@@ -62,15 +62,15 @@ func sendRequest(requestURL string, jsonOfRequest []byte) []byte {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	fmt.Println("response status: ", resp.Status)
-	fmt.Println("response header:", resp.Header)
+	//fmt.Println("response status: ", resp.Status)
+	//fmt.Println("response header:", resp.Header)
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	//fmt.Println("response body:", string(body))
 	return body
 }
 
-func parseJson(responseData []byte) {
+func parseJson(responseData []byte) []string {
 	response := bytes.NewReader(responseData)
 	decoder := json.NewDecoder(response)
 	val := &APIResponse{}
@@ -78,34 +78,52 @@ func parseJson(responseData []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var matches []string
 	if val.Matches != nil {
-		var matches []string
 		for _, s := range val.Matches {
 			matches = append(matches, s.Threat.Url)
-			fmt.Println(s.Threat.Url)
-			fmt.Println(matches)
+			//fmt.Println(s.Threat.Url)
 		}
 	} else {
 		fmt.Println("Url not found")
 		os.Exit(1)
 	}
+	return matches
 }
 
+func writeLines(urlArray []string, outFile string) {
+	file, err := os.Create(outFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, line := range urlArray {
+		//writer.WriteString(line)
+		fmt.Fprintln(writer, line)
+	}
+	writer.Flush()
+}
 func main() {
 	const URL string = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="
 
-	keyPath := flag.String("key", "", "usage --key /foo/bar.key")
-	jsonOfRequestPath := flag.String("json", "", "usege --json /request_data.json")
+	keyPath := flag.String("key", "", "usage --key /api.key")
+	jsonOfRequestPath := flag.String("json", "", "usage --json /request_data.json")
+	outLog := flag.String("out", "", "usage --out /matches_thret_url_to_file")
 	flag.Parse()
 
 	key := *keyPath
 	requestData := *jsonOfRequestPath
+	outSnmpFile := *outLog
 	// check required flag
-	if key == "" || requestData == "" {
+	if key == "" || requestData == "" || outSnmpFile == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	parseJson(sendRequest(getURL(key, URL), getJsonOfRequest(requestData)))
+	threatUrls := parseJson(sendRequest(getURL(key, URL), getJsonOfRequest(requestData)))
 	//sendRequest(getURL(key, URL))
+	writeLines(threatUrls, outSnmpFile)
+
 }
