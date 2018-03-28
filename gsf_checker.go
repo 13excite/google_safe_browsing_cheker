@@ -39,7 +39,7 @@ func getJsonOfRequest(filePath string) []byte {
 func getURL(filePath, shortRequestURL string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer file.Close()
 	var lines []string
@@ -59,7 +59,7 @@ func sendRequest(requestURL string, jsonOfRequest []byte) []byte {
 	client := &http.Client{Timeout: 4 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 	//fmt.Println("response status: ", resp.Status)
