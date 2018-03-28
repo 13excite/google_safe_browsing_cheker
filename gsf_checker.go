@@ -79,11 +79,8 @@ func parseJson(responseData []byte) {
 		log.Fatal(err)
 	}
 	if val.Matches != nil {
-		var matches []string
 		for _, s := range val.Matches {
-			matches = append(matches, s.Threat.Url)
 			fmt.Println(s.Threat.Url)
-			fmt.Println(matches)
 		}
 	} else {
 		fmt.Println("Url not found")
